@@ -15,6 +15,24 @@
 type XValue = string | number | Date;
 
 /**
+ * The context an axis `tickFormat` callback receives alongside the tick value.
+ */
+type TickFormatContext = {
+	/**
+	 * The label the axis paints when no `tickFormat` is set, with the same
+	 * precision, grouping, and calendar rules applied. Decorate it
+	 * (`$${defaultLabel}`) instead of re-deriving the formatting.
+	 */
+	defaultLabel: string;
+	/**
+	 * The gap between neighboring ticks in this round, in axis units — epoch
+	 * milliseconds on time axes. `null` when the round produced a single tick,
+	 * and always `null` on category axes, which have no numeric interval.
+	 */
+	interval: number | null;
+};
+
+/**
  * A single row of chart data — any object shape. Series read one numeric key
  * per row; the x key identifies the row's position on the x axis. Missing
  * keys and `null` values are rendered as gaps. Typed as `object` (not an
@@ -224,7 +242,7 @@ type GridLines = "horizontal" | "vertical" | "both";
  * and a number on linear scales.
  */
 type XAxisSpec = {
-	tickFormat: ((value: XValue) => string) | undefined;
+	tickFormat: ((value: XValue, context: TickFormatContext) => string) | undefined;
 	tickCount: number | undefined;
 };
 
@@ -232,7 +250,7 @@ type XAxisSpec = {
  * Registered y-axis configuration.
  */
 type YAxisSpec = {
-	tickFormat: ((value: number) => string) | undefined;
+	tickFormat: ((value: number, context: TickFormatContext) => string) | undefined;
 	tickCount: number | undefined;
 };
 
@@ -342,6 +360,7 @@ export type {
 	SeriesMark,
 	SeriesMeta,
 	SeriesSpec,
+	TickFormatContext,
 	XAxisSpec,
 	XScaleKind,
 	XValue,

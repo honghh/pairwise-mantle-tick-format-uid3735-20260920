@@ -44,6 +44,7 @@ import type {
 	SeriesColor,
 	SeriesMark,
 	SeriesMeta,
+	TickFormatContext,
 	XScaleKind,
 	XValue,
 	YDomain,
@@ -814,8 +815,11 @@ type XAxisPrimitiveProps = {
 	/**
 	 * Format a tick label. Receives the chart's x values: the category value on
 	 * band/point scales, a `Date` on time scales, and a number on linear scales.
+	 * The second argument carries the label the axis paints by default (decorate
+	 * it instead of re-deriving precision or calendar rules) and the round's
+	 * tick interval (`null` on category axes and single-tick rounds).
 	 */
-	tickFormat?: (value: XValue) => string;
+	tickFormat?: (value: XValue, context: TickFormatContext) => string;
 	/**
 	 * Target tick count (continuous scales only; a density-derived default
 	 * otherwise). Approximate: ticks land on human-friendly steps, and a linear
@@ -836,8 +840,13 @@ const useXAxisPrimitive = (partName: string, props: XAxisPrimitiveProps): null =
 };
 
 type YAxisPrimitiveProps = {
-	/** Format a tick label. Defaults to thousands-separated numbers. */
-	tickFormat?: (value: number) => string;
+	/**
+	 * Format a tick label. Defaults to thousands-separated numbers. The second
+	 * argument carries the default label (decorate it instead of re-deriving
+	 * the tick-step precision) and the round's tick interval (`null` when the
+	 * round produced a single tick).
+	 */
+	tickFormat?: (value: number, context: TickFormatContext) => string;
 	/**
 	 * Target tick count. Approximate: ticks land on human-friendly steps, and
 	 * when every series value is an integer (counts) the axis never renders

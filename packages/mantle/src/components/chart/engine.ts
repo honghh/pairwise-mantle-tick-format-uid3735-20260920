@@ -1537,13 +1537,18 @@ class ChartEngine {
 			ticks.length > 1
 				? tickFractionDigits(Math.abs((ticks[1] ?? 0) - (ticks[0] ?? 0)))
 				: undefined;
-		return ticks.map((value) => ({
-			value,
-			text:
-				format == null
-					? formatNumber(value, digits == null ? undefined : { maximumFractionDigits: digits })
-					: format(value),
-		}));
+		// A single-tick round has no measurable gap; the formatter reads `null`.
+		const interval = ticks.length > 1 ? Math.abs((ticks[1] ?? 0) - (ticks[0] ?? 0)) : null;
+		return ticks.map((value) => {
+			const defaultLabel = formatNumber(
+				value,
+				digits == null ? undefined : { maximumFractionDigits: digits },
+			);
+			return {
+				value,
+				text: format == null ? defaultLabel : format(value, { defaultLabel, interval }),
+			};
+		});
 	}
 
 	#xTicks(): Array<{ index: number | null; value: number; text: string }> {
@@ -1565,13 +1570,12 @@ class ChartEngine {
 			const ticks: Array<{ index: number | null; value: number; text: string }> = [];
 			for (let index = 0; index < this.#rowCount; index += stride) {
 				const value = this.#xValues[index] ?? "";
+				const defaultLabel = formatXValue(value, { datasetHasTimeOfDay: this.#xHasTimeOfDay });
 				ticks.push({
 					index,
 					value: index,
-					text:
-						format == null
-							? formatXValue(value, { datasetHasTimeOfDay: this.#xHasTimeOfDay })
-							: format(value),
+					// A category axis has no numeric interval: `null`, always.
+					text: format == null ? defaultLabel : format(value, { defaultLabel, interval: null }),
 				});
 			}
 			return ticks;
@@ -1581,11 +1585,17 @@ class ChartEngine {
 		const count = snapshot.xAxis?.tickCount ?? Math.max(2, Math.floor(this.#plot.width / 90));
 		if (this.#options.xScale === "time") {
 			const defaultFormat = timeTickFormatter(range);
-			return timeTicks(range, count).map((epoch) => ({
-				index: null,
-				value: epoch,
-				text: format == null ? defaultFormat(epoch) : format(new Date(epoch)),
-			}));
+			const epochs = timeTicks(range, count);
+			const interval = epochs.length > 1 ? Math.abs((epochs[1] ?? 0) - (epochs[0] ?? 0)) : null;
+			return epochs.map((epoch) => {
+				const defaultLabel = defaultFormat(epoch);
+				return {
+					index: null,
+					value: epoch,
+					text:
+						format == null ? defaultLabel : format(new Date(epoch), { defaultLabel, interval }),
+				};
+			});
 		}
 		// Same whole-step clamp as the value axis: a linear x over integer data
 		// (attempt number, batch index) never grows fractional ticks.
@@ -1594,14 +1604,18 @@ class ChartEngine {
 			ticks.length > 1
 				? tickFractionDigits(Math.abs((ticks[1] ?? 0) - (ticks[0] ?? 0)))
 				: undefined;
-		return ticks.map((value) => ({
-			index: null,
-			value,
-			text:
-				format == null
-					? formatNumber(value, digits == null ? undefined : { maximumFractionDigits: digits })
-					: format(value),
-		}));
+		const interval = ticks.length > 1 ? Math.abs((ticks[1] ?? 0) - (ticks[0] ?? 0)) : null;
+		return ticks.map((value) => {
+			const defaultLabel = formatNumber(
+				value,
+				digits == null ? undefined : { maximumFractionDigits: digits },
+			);
+			return {
+				index: null,
+				value,
+				text: format == null ? defaultLabel : format(value, { defaultLabel, interval }),
+			};
+		});
 	}
 
 	#paint(now: number): boolean {
