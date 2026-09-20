@@ -547,6 +547,25 @@ export function IntegerCountsBarChartExample() {
 	);
 }
 
+export const errorRates = [
+	{ day: "Mon", rate: 0.002 },
+	{ day: "Tue", rate: 0.004 },
+	{ day: "Wed", rate: 0.001 },
+	{ day: "Thu", rate: 0.003 },
+	{ day: "Fri", rate: 0.005 },
+];
+
+export function TickLabelContextBarChartExample() {
+	return (
+		<BarChart.Root data={errorRates} xKey="day" aria-label="Error rate by day">
+			<BarChart.Grid />
+			<BarChart.XAxis />
+			<BarChart.YAxis tickFormat={(value, { defaultLabel }) => `${defaultLabel}%`} />
+			<BarChart.Bar dataKey="rate" label="Error rate" />
+		</BarChart.Root>
+	);
+}
+
 export function ReferenceLineBarChartExample() {
 	return (
 		<BarChart.Root data={monthlyVisitors} xKey="month" aria-label="Visitors by month">
@@ -1458,6 +1477,39 @@ function IntegerCountsBarChartExample() {
 }
 ```
 
+## Decorating tick labels
+
+`tickFormat` receives a second argument with the label the engine generates itself and the tick context. Decorate `defaultLabel` instead of formatting the raw value: it already carries the tick step's decimal precision, thousands grouping, and the calendar-aware date or category treatment. The returned string is the final label, so the axis gutter and the collision thinning both measure it.
+
+The context reports the axis shape directly. Categorical x axes carry `scale: "band"` (bar charts) or `"point"` (line and area charts over categories) and `step: null`, because categories have no numeric interval. Continuous axes carry `scale: "linear"` or `"time"` and `step` for the interval between the ticks this paint generated: value units on a linear axis, milliseconds on a time axis. A single-tick axis reports `step: null`.
+
+<Example>
+	<TickLabelContextBarChartExample />
+</Example>
+
+```tsx
+import { BarChart } from "@ngrok/mantle/bar-chart";
+
+const errorRates = [
+	{ day: "Mon", rate: 0.002 },
+	{ day: "Tue", rate: 0.004 },
+	{ day: "Wed", rate: 0.001 },
+	{ day: "Thu", rate: 0.003 },
+	{ day: "Fri", rate: 0.005 },
+];
+
+function TickLabelContextBarChartExample() {
+	return (
+		<BarChart.Root data={errorRates} xKey="day" aria-label="Error rate by day">
+			<BarChart.Grid />
+			<BarChart.XAxis />
+			<BarChart.YAxis tickFormat={(value, { defaultLabel }) => `${defaultLabel}%`} />
+			<BarChart.Bar dataKey="rate" label="Error rate" />
+		</BarChart.Root>
+	);
+}
+```
+
 ## Reference lines
 
 Compose `BarChart.ReferenceLine` to mark a threshold, budget, or limit as a dashed horizontal line at a y value, with an optional label painted above its right end.
@@ -1972,9 +2024,11 @@ Hairline value gridlines behind the bars (renderless; painted on canvas). The de
 
 Category labels for the bars (renderless; painted on canvas): along the bottom for vertical bars, down the left gutter for horizontal bars. Labels that would collide are skipped, never rotated. Accepts no `className` or DOM props.
 
+The `tickFormat` callback receives a second argument with `defaultLabel`, `scale` (`"band"`), and `step` (`null`, because categories have no numeric interval). See [Decorating tick labels](#decorating-tick-labels). A one-argument callback still works.
+
 | Prop          | Type                                          | Default | Description                                                                                                                               |
 | ------------- | --------------------------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `tickFormat?` | `(value: string \| number \| Date) => string` |         | Format a tick label. Receives the row's category value.                                                                                   |
+| `tickFormat?` | `(value, context?) => string`                 |         | Format a tick label. The first argument is the row's category value. The optional context carries `defaultLabel`, `scale` (`"band"`), and `step` (`null` for a category axis). The returned string is the final label; a one-argument callback still works. |
 | `tickCount?`  | `number`                                      |         | Target tick count (continuous scales only). Bar charts use a band scale, where label density is automatic — colliding labels are skipped. |
 
 ### BarChart.YAxis
@@ -1983,7 +2037,7 @@ Value tick labels (renderless; painted on canvas): along the left for vertical b
 
 | Prop          | Type                        | Default                     | Description                                                                                             |
 | ------------- | --------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `tickFormat?` | `(value: number) => string` | thousands-separated numbers | Format a tick label.                                                                                    |
+| `tickFormat?` | `(value, context?) => string` | thousands-separated numbers | Format a tick label. The optional context carries the `defaultLabel` and the tick `step` (`null` for one tick). The returned string is the final label; a one-argument callback still works. |
 | `tickCount?`  | `number`                    |                             | Target tick count. Approximate: integer-valued data never renders fractional ticks, whatever the count. |
 
 ### BarChart.ReferenceLine

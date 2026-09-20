@@ -26,7 +26,7 @@ import {
 import { createBarTexturePattern, textureInkColor } from "./texture.js";
 import { datumValue } from "./datum.js";
 import { decimateColumns, shouldDecimate } from "./decimate.js";
-import { formatNumber, formatXValue, hasTimeOfDay, tickFractionDigits } from "./format.js";
+import { hasTimeOfDay } from "./format.js";
 import { nearestIndex } from "./hit-test.js";
 import type { Camera } from "./projection.js";
 import {
@@ -50,6 +50,12 @@ import {
 	timeTickFormatter,
 	timeTicks,
 } from "./scales.js";
+import {
+	resolveCategoryTickLabel,
+	resolveLinearTickLabels,
+	resolveTimeTickLabels,
+	resolveValueTickLabels,
+} from "./tick-format.js";
 import type { BarRect, HorizontalBarRect, PlotRect } from "./renderer.js";
 import {
 	AXIS_FONT_SIZE,
@@ -1531,19 +1537,7 @@ class ChartEngine {
 			{ integer: this.#valuesAllIntegers },
 		);
 		const format = snapshot.yAxis?.tickFormat;
-		// Precision follows the tick step, so small-magnitude domains (error
-		// rates) never collapse neighboring labels into identical "0"s.
-		const digits =
-			ticks.length > 1
-				? tickFractionDigits(Math.abs((ticks[1] ?? 0) - (ticks[0] ?? 0)))
-				: undefined;
-		return ticks.map((value) => ({
-			value,
-			text:
-				format == null
-					? formatNumber(value, digits == null ? undefined : { maximumFractionDigits: digits })
-					: format(value),
-		}));
+		return resolveValueTickLabels(ticks, format);
 	}
 
 	#xTicks(): Array<{ index: number | null; value: number; text: string }> {
@@ -1562,17 +1556,16 @@ class ChartEngine {
 			const perLabel = horizontal ? AXIS_FONT_SIZE + 4 : 60;
 			const maxLabels = Math.max(1, Math.floor(axisExtent / perLabel));
 			const stride = Math.max(1, Math.ceil(this.#rowCount / maxLabels));
+			// Labels resolve for the thinned indexes alone, so a ten-thousand-band
+			// chart formats one label per surviving slot rather than per row.
+			const scale: "band" | "point" = this.#options.xScale === "band" ? "band" : "point";
 			const ticks: Array<{ index: number | null; value: number; text: string }> = [];
 			for (let index = 0; index < this.#rowCount; index += stride) {
 				const value = this.#xValues[index] ?? "";
-				ticks.push({
-					index,
-					value: index,
-					text:
-						format == null
-							? formatXValue(value, { datasetHasTimeOfDay: this.#xHasTimeOfDay })
-							: format(value),
+				const text = resolveCategoryTickLabel(value, scale, format, {
+					datasetHasTimeOfDay: this.#xHasTimeOfDay,
 				});
+				ticks.push({ index, value: index, text });
 			}
 			return ticks;
 		}
@@ -1580,27 +1573,21 @@ class ChartEngine {
 		const range: [number, number] = [domain[0] ?? 0, domain[1] ?? 1];
 		const count = snapshot.xAxis?.tickCount ?? Math.max(2, Math.floor(this.#plot.width / 90));
 		if (this.#options.xScale === "time") {
+			const epochs = timeTicks(range, count);
 			const defaultFormat = timeTickFormatter(range);
-			return timeTicks(range, count).map((epoch) => ({
+			return resolveTimeTickLabels(epochs, defaultFormat, format).map((tick) => ({
 				index: null,
-				value: epoch,
-				text: format == null ? defaultFormat(epoch) : format(new Date(epoch)),
+				value: tick.value,
+				text: tick.text,
 			}));
 		}
 		// Same whole-step clamp as the value axis: a linear x over integer data
 		// (attempt number, batch index) never grows fractional ticks.
 		const ticks = linearTicks(range, count, { integer: this.#xsAllIntegers });
-		const digits =
-			ticks.length > 1
-				? tickFractionDigits(Math.abs((ticks[1] ?? 0) - (ticks[0] ?? 0)))
-				: undefined;
-		return ticks.map((value) => ({
+		return resolveLinearTickLabels(ticks, format).map((tick) => ({
 			index: null,
-			value,
-			text:
-				format == null
-					? formatNumber(value, digits == null ? undefined : { maximumFractionDigits: digits })
-					: format(value),
+			value: tick.value,
+			text: tick.text,
 		}));
 	}
 

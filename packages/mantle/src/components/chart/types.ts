@@ -219,20 +219,118 @@ type SeriesMeta = {
 type GridLines = "horizontal" | "vertical" | "both";
 
 /**
+ * Context the engine passes to an x-axis `tickFormat` after the raw value.
+ * A discriminated union on `scale` makes every shape explicit:
+ *
+ * - `"band"` and `"point"` are categorical. They carry no numeric interval,
+ *   so `step` is `null`.
+ * - `"linear"` and `"time"` are continuous. `step` is the interval between
+ *   the ticks the engine generated this round, in value units for `"linear"`
+ *   and in milliseconds for `"time"`. A single-tick axis sets `step: null`.
+ *
+ * `defaultLabel` is the label the engine paints when `tickFormat` is unset,
+ * including the tick-step-derived fraction digits, thousands grouping, and
+ * calendar-aware date formatting. Decorate it instead of re-deriving any of
+ * those.
+ *
+ * @example
+ * ```ts
+ * tickFormat={(value, context) =>
+ * 	context.scale === "band" ? context.defaultLabel : `${context.defaultLabel}ms`
+ * }
+ * ```
+ */
+type XAxisTickFormatContext =
+	| {
+			/** The label the engine paints without a custom `tickFormat`. */
+			defaultLabel: string;
+			/** The scale kind: categorical `"band"` (bar charts) or `"point"`. */
+			scale: "band" | "point";
+			/** Categorical scales have no numeric interval, so this stays `null`. */
+			step: null;
+	  }
+	| {
+			/** The label the engine paints without a custom `tickFormat`. */
+			defaultLabel: string;
+			/** The scale kind: numeric `"linear"` or calendar-aware `"time"`. */
+			scale: "linear" | "time";
+			/**
+			 * The interval between this round's neighboring ticks: value units on a
+			 * linear scale, milliseconds on a time scale. `null` when the engine
+			 * generated one tick.
+			 */
+			step: number | null;
+	  };
+
+/**
+ * An x-axis tick formatter. The first argument is the chart's x value (the
+ * category value on band/point scales, a `Date` on time scales, and a number
+ * on linear scales); the second carries the engine-generated default label
+ * and the tick context. A callback that declares only the first argument
+ * stays valid.
+ *
+ * @example
+ * ```ts
+ * const units: XAxisTickFormatter = (value, { defaultLabel }) => `${defaultLabel} ms`;
+ * ```
+ */
+type XAxisTickFormatter = (
+	value: XValue,
+	context: XAxisTickFormatContext,
+) => string;
+
+/**
+ * Context the engine passes to a y-axis `tickFormat` after the raw value.
+ *
+ * `step` is the interval between the value ticks the engine generated this
+ * round, in value units. A single-tick axis sets `step: null`. `defaultLabel`
+ * is the thousands-separated label the engine paints without a custom
+ * formatter, with the fraction digits the tick step needs (so `0.1` steps
+ * render `"0"`, `"0.1"`, `"0.2"`).
+ *
+ * @example
+ * ```ts
+ * tickFormat={(value, { defaultLabel }) => `$${defaultLabel}`}
+ * ```
+ */
+type YAxisTickFormatContext = {
+	/** The label the engine paints without a custom `tickFormat`. */
+	defaultLabel: string;
+	/**
+	 * The interval between this round's neighboring ticks, in value units.
+	 * `null` when the engine generated one tick.
+	 */
+	step: number | null;
+};
+
+/**
+ * A y-axis tick formatter. The first argument is the tick value; the second
+ * carries the engine-generated default label and the tick interval. A
+ * callback that declares only the first argument stays valid.
+ *
+ * @example
+ * ```ts
+ * const currency: YAxisTickFormatter = (value, { defaultLabel }) => `$${defaultLabel}`;
+ * ```
+ */
+type YAxisTickFormatter = (value: number, context: YAxisTickFormatContext) => string;
+
+/**
  * Registered x-axis configuration. The formatter receives the chart's x
- * values: the category value on band/point scales, a `Date` on time scales,
- * and a number on linear scales.
+ * values (the category value on band/point scales, a `Date` on time scales,
+ * and a number on linear scales) and the default-label/tick context.
  */
 type XAxisSpec = {
-	tickFormat: ((value: XValue) => string) | undefined;
+	tickFormat: XAxisTickFormatter | undefined;
 	tickCount: number | undefined;
 };
 
 /**
- * Registered y-axis configuration.
+ * Registered y-axis configuration. The formatter receives the tick value and
+ * the default-label/tick context.
  */
 type YAxisSpec = {
-	tickFormat: ((value: number) => string) | undefined;
+	tickFormat: YAxisTickFormatter | undefined;
 	tickCount: number | undefined;
 };
 
@@ -343,8 +441,12 @@ export type {
 	SeriesMeta,
 	SeriesSpec,
 	XAxisSpec,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
 	XScaleKind,
 	XValue,
 	YAxisSpec,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 	YDomain,
 };

@@ -19,4 +19,8 @@ export type {
 	LineChartTooltipProps,
 	LineChartXAxisProps,
 	LineChartYAxisProps,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "./line-chart.js";

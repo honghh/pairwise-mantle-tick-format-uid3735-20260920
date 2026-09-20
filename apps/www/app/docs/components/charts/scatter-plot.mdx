@@ -912,9 +912,11 @@ Hairline gridlines behind the points. Renderless — painted on canvas; 2D only 
 
 Value labels along the bottom of the plot. Renderless — painted on canvas; 2D only. Labels that would collide are skipped, never rotated.
 
+The `tickFormat` callback receives a second argument with `defaultLabel`, `scale` (`"linear"` or `"time"`), and `step` (the tick interval in value units or milliseconds, `null` for one tick). Decorate `defaultLabel` to keep the engine's date or number formatting; see [Decorating tick labels](./bar-chart#decorating-tick-labels). A one-argument callback still works.
+
 | Prop          | Type                                          | Default         | Description                                                                                                                                                                   |
 | ------------- | --------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tickFormat?` | `(value: string \| number \| Date) => string` | scale-dependent | Format a tick label. Receives the row's x value — a number on linear scales, a `Date` on time scales. Defaults to thousands-separated numbers and calendar-aware time labels. |
+| `tickFormat?` | `(value, context?) => string` | scale-dependent | Format a tick label. The first argument is the row's x value: a number on linear scales, a `Date` on time scales. The optional context carries the `defaultLabel` (the scale-dependent label the axis paints without a formatter), the `scale`, and the tick `step` in value units or milliseconds (`null` for one tick). The returned string is the final label; a one-argument callback still works. |
 | `tickCount?`  | `number`                                      | density-derived | Target tick count. Approximate: a linear axis over integer-only x values never renders fractional ticks.                                                                      |
 
 ### ScatterPlot.YAxis
@@ -923,7 +925,7 @@ Value tick labels along the left of the plot. Renderless — painted on canvas; 
 
 | Prop          | Type                        | Default             | Description                                                                                             |
 | ------------- | --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
-| `tickFormat?` | `(value: number) => string` | thousands-separated | Format a tick label.                                                                                    |
+| `tickFormat?` | `(value, context?) => string` | thousands-separated | Format a tick label. The optional context carries the `defaultLabel` and the tick `step` in value units (`null` for one tick). The returned string is the final label; a one-argument callback still works. |
 | `tickCount?`  | `number`                    | `5`                 | Target tick count. Approximate: integer-valued data never renders fractional ticks, whatever the count. |
 
 ### ScatterPlot.ReferenceLine

@@ -19,4 +19,8 @@ export type {
 	AreaChartXAxisProps,
 	AreaChartYAxisProps,
 	ChartDatumEvent,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "./area-chart.js";

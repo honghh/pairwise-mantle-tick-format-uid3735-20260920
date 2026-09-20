@@ -44,8 +44,10 @@ import type {
 	SeriesColor,
 	SeriesMark,
 	SeriesMeta,
+	XAxisTickFormatter,
 	XScaleKind,
 	XValue,
+	YAxisTickFormatter,
 	YDomain,
 } from "./types.js";
 
@@ -812,10 +814,16 @@ const useGridPrimitive = (partName: string, props: GridPrimitiveProps): null => 
 
 type XAxisPrimitiveProps = {
 	/**
-	 * Format a tick label. Receives the chart's x values: the category value on
-	 * band/point scales, a `Date` on time scales, and a number on linear scales.
+	 * Format a tick label. The first argument is the chart's x value: the
+	 * category value on band/point scales, a `Date` on time scales, and a
+	 * number on linear scales. The second argument carries the label the
+	 * engine paints without a formatter and the tick context: a categorical
+	 * scale reports `step: null`; a continuous scale reports the interval
+	 * between this round's ticks (`null` when it generated one tick). The
+	 * returned string is the final label. A callback that takes one argument
+	 * stays valid.
 	 */
-	tickFormat?: (value: XValue) => string;
+	tickFormat?: XAxisTickFormatter;
 	/**
 	 * Target tick count (continuous scales only; a density-derived default
 	 * otherwise). Approximate: ticks land on human-friendly steps, and a linear
@@ -836,8 +844,15 @@ const useXAxisPrimitive = (partName: string, props: XAxisPrimitiveProps): null =
 };
 
 type YAxisPrimitiveProps = {
-	/** Format a tick label. Defaults to thousands-separated numbers. */
-	tickFormat?: (value: number) => string;
+	/**
+	 * Format a tick label. The first argument is the tick value. The second
+	 * argument carries the thousands-separated label the engine paints
+	 * without a formatter (with the tick step's fraction digits) and the
+	 * interval between this round's ticks (`null` when it generated one tick).
+	 * The returned string is the final label. A callback that takes one
+	 * argument stays valid.
+	 */
+	tickFormat?: YAxisTickFormatter;
 	/**
 	 * Target tick count. Approximate: ticks land on human-friendly steps, and
 	 * when every series value is an integer (counts) the axis never renders

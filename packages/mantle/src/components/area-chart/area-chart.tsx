@@ -19,6 +19,10 @@ import type {
 	CurveKind,
 	PointShape,
 	SeriesColor,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "../chart/types.js";
 import {
 	ChartCopyButtonPrimitive,
@@ -113,13 +117,14 @@ type AreaChartGridProps = GridPrimitiveProps;
 
 /**
  * Props for {@link AreaChart.XAxis}. The tick formatter receives the row's x
- * value — the category value on point scales, a `Date` on time scales, and a
- * number on linear scales.
+ * value (the category value on point scales, a `Date` on time scales, and a
+ * number on linear scales) and the {@link XAxisTickFormatContext} context.
  */
 type AreaChartXAxisProps = XAxisPrimitiveProps;
 
 /**
- * Props for {@link AreaChart.YAxis}.
+ * Props for {@link AreaChart.YAxis}. The tick formatter receives the tick
+ * value and the {@link YAxisTickFormatContext} context.
  */
 type AreaChartYAxisProps = YAxisPrimitiveProps;
 
@@ -644,6 +649,10 @@ export type {
 	AreaChartXAxisProps,
 	AreaChartYAxisProps,
 	ChartDatumEvent,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 };
 export {
 	//,

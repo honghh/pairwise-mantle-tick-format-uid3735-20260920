@@ -18,6 +18,10 @@ import type {
 	ChartDatumEvent,
 	ChartSeriesSlot,
 	SeriesColor,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "../chart/types.js";
 import {
 	ChartCopyButtonPrimitive,
@@ -122,12 +126,13 @@ type BarChartGridProps = GridPrimitiveProps;
 
 /**
  * Props for {@link BarChart.XAxis}. The tick formatter receives the row's
- * category value.
+ * category value and the {@link XAxisTickFormatContext} context.
  */
 type BarChartXAxisProps = XAxisPrimitiveProps;
 
 /**
- * Props for {@link BarChart.YAxis}.
+ * Props for {@link BarChart.YAxis}. The tick formatter receives the tick
+ * value and the {@link YAxisTickFormatContext} context.
  */
 type BarChartYAxisProps = YAxisPrimitiveProps;
 
@@ -644,6 +649,10 @@ export type {
 	BarChartXAxisProps,
 	BarChartYAxisProps,
 	ChartDatumEvent,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 };
 export {
 	//,

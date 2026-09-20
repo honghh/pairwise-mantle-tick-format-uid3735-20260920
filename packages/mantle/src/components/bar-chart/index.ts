@@ -19,4 +19,8 @@ export type {
 	BarChartXAxisProps,
 	BarChartYAxisProps,
 	ChartDatumEvent,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "./bar-chart.js";

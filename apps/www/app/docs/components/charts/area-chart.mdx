@@ -966,9 +966,11 @@ Horizontal hairline gridlines behind the areas. Renderless — painted on canvas
 
 Tick labels along the bottom of the plot. Renderless — painted on canvas. Labels that would collide are skipped, never rotated.
 
+The `tickFormat` callback receives a second argument with `defaultLabel`, `scale` (`"point"`, `"linear"`, or `"time"`), and `step` (`null` for a category axis or one tick). Decorate `defaultLabel` to keep the engine's date or number formatting; see [Decorating tick labels](./bar-chart#decorating-tick-labels). A one-argument callback still works.
+
 | Prop         | Type                                          | Default         | Description                                                                                                                                  |
 | ------------ | --------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tickFormat` | `(value: string \| number \| Date) => string` |                 | Format a tick label. Receives the row's x value: the category value on point scales, a `Date` on time scales, and a number on linear scales. |
+| `tickFormat` | `(value, context?) => string` |                 | Format a tick label. The first argument is the row's x value: the category value on point scales, a `Date` on time scales, and a number on linear scales. The optional context carries the `defaultLabel` (the scale-dependent label the axis paints without a formatter), the `scale`, and the tick `step` in value units or milliseconds (`null` for one tick or a category axis). The returned string is the final label; a one-argument callback still works. |
 | `tickCount`  | `number`                                      | density-derived | Target tick count (continuous scales only). Approximate: a linear axis over integer-only x values never renders fractional ticks.            |
 
 ### AreaChart.YAxis
@@ -977,7 +979,7 @@ Value tick labels along the left of the plot. Renderless — painted on canvas. 
 
 | Prop         | Type                        | Default             | Description                                                                                             |
 | ------------ | --------------------------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
-| `tickFormat` | `(value: number) => string` | thousands-separated | Format a tick label.                                                                                    |
+| `tickFormat` | `(value, context?) => string` | thousands-separated | Format a tick label. The optional context carries the `defaultLabel` and the tick `step` in value units (`null` for one tick). The returned string is the final label; a one-argument callback still works. |
 | `tickCount`  | `number`                    | `5`                 | Target tick count. Approximate: integer-valued data never renders fractional ticks, whatever the count. |
 
 ### AreaChart.ReferenceLine

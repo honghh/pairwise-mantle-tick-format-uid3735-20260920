@@ -17,6 +17,10 @@ import type {
 	ChartSeriesSlot,
 	PointShape,
 	SeriesColor,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "../chart/types.js";
 import {
 	ChartCopyButtonPrimitive,
@@ -129,12 +133,15 @@ type ScatterPlotPointProps = {
 type ScatterPlotGridProps = GridPrimitiveProps;
 
 /**
- * Props for {@link ScatterPlot.XAxis}.
+ * Props for {@link ScatterPlot.XAxis}. The tick formatter receives the x
+ * value (a number on linear scales, a `Date` on time scales) and the
+ * {@link XAxisTickFormatContext} context.
  */
 type ScatterPlotXAxisProps = XAxisPrimitiveProps;
 
 /**
- * Props for {@link ScatterPlot.YAxis}.
+ * Props for {@link ScatterPlot.YAxis}. The tick formatter receives the tick
+ * value and the {@link YAxisTickFormatContext} context.
  */
 type ScatterPlotYAxisProps = YAxisPrimitiveProps;
 
@@ -640,6 +647,10 @@ export type {
 	ScatterPlotTooltipProps,
 	ScatterPlotXAxisProps,
 	ScatterPlotYAxisProps,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 };
 export {
 	//,

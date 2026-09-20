@@ -19,4 +19,8 @@ export type {
 	ScatterPlotTooltipProps,
 	ScatterPlotXAxisProps,
 	ScatterPlotYAxisProps,
+	XAxisTickFormatContext,
+	XAxisTickFormatter,
+	YAxisTickFormatContext,
+	YAxisTickFormatter,
 } from "./scatter-plot.js";
